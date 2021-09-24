@@ -40,6 +40,8 @@ class MainApplication(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
 
         #initialize variables
+        self.__username = ""
+        self.__key = "123"
         self.__rec_id = ""
         self.__first_name = ""
         self.__last_name = ""
@@ -101,35 +103,27 @@ class MainApplication(QtWidgets.QMainWindow):
             self.ui.login_label_login_denied.setHidden(False) #make label visible       
             self.ui.login_label_login_denied.setText("Punctuation not allowed in Username") #change text 
 
-        else:
-            ##get pw from sql
-            self.__obj_db = db_conn.DBAuthenticate(self.__form_login_username)
-            self.__results = self.__obj_db.authenticate()
-
-            if self.__results == None:
+        else:            
+            if self.__form_login_username == "Username" or self.__form_login_password == "Password":
                 #access denied
                 self.ui.login_label_login_denied.setHidden(False) #make label visible       
                 self.ui.login_label_login_denied.setText("Please enter Username and Password") #change text          
 
             else:
-                self.__first_name= self.__results[1]
-                self.__last_name = self.__results[2]
-                self.__pw = self.__results[4]
-
-                if  self.__pw == self.__form_login_password:
+                if  self.__key == self.__form_login_password:
                     #access granted
                     self.ui.login_label_login_denied.setHidden(True) #hide label
                     self.ui.label_welcome.setHidden(False) #unhide label
-                    self.ui.label_welcome.setText("Welcome " + self.__first_name + " " + self.__last_name) #change text
+                    self.ui.label_welcome.setText("Welcome " + self.__form_login_username) #change text
 
                     #form navigation
-                    self.__nav_main()        
+                    self.__nav_main()
                 
                 else:
                     #access denied
                     self.ui.login_label_login_denied.setHidden(False) #make label visible       
                     self.ui.login_label_login_denied.setText("Incorrect Username/Password") #change text
-      
+  
     def __form_main_menu_select(self):
 
         #get value from list widget
@@ -236,8 +230,34 @@ class MainApplication(QtWidgets.QMainWindow):
         self.__last_name = self.ui.client_edit_profile_last_name.text()
         self.__selected_service = self.ui.client_edit_profile_cmb_service.currentText()
 
-        #pass data to sql table
-        ManageClient.edit_client_list(self, self.__id, self.__first_name, self.__last_name, self.__selected_service)
+
+        #WEBSTER
+        self__df_update_index = self.__df.index[self.__df['ID'] == self.__id].tolist()
+
+        #get row to append
+        self.__df_append_row = self__df_update_index
+
+        #get length of dataframe
+        self.__df_length = len(self.__df)
+
+        #build client record to add
+        self.__update_client_data = [
+            str(self.__id),
+            str(self.__first_name),
+            str(self.__last_name),
+            str(self.__selected_service)
+            ]            
+
+        #check input is within length of rows and drop if true
+        #if self.__df_append_row <= int(self.__df_length):            
+        
+        self.__df.loc[self__df_update_index] = self.__update_client_data
+
+
+
+
+
+
 
         #form navigation
         self.__nav_client_edit_profile() 
@@ -252,14 +272,20 @@ class MainApplication(QtWidgets.QMainWindow):
         if self.__form_first_name != "First Name" and  self.__form_last_name != 'Last Name':           
 
             #get length of dataframe
-            self.__df_next_row = len(self.__df) + 1
+            self.__df_last_row = len(self.__df) - 1
+
+            #get id from last record
+            self.__new_id = str(self.__df.iloc[self.__df_last_row][0])
+
+            #create id of next row
+            self.__df_next_row = int(self.__new_id) + 1
 
             #build client record to add
             self.__add_client_data = [
-                self.__df_next_row,
-                self.__form_first_name,
-                self.__form_last_name,
-                self.__form_selected_service
+                str(self.__df_next_row),
+                str(self.__form_first_name),
+                str(self.__form_last_name),
+                str(self.__form_selected_service)
                 ]            
 
             #append new row to dataframe
@@ -279,42 +305,19 @@ class MainApplication(QtWidgets.QMainWindow):
 
         if self.__check_digit == "True":
 
-            #get row to drop
-            self.__row = int(self.__id) - 1
+            #get label to drop
+            self.__drop_label = self.__id
 
-            #drop row from dataframe
-            #self.__df.drop([self.__df.index[self.__row]])
-
-
-            self.__delete_df = self.__df.drop([self.__df.index[1]])
- 
-            self.__delete_df 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            #drop record
+            self.__df.drop(self.__df.loc[ self.__df['ID'] == self.__drop_label].index , inplace = True)
 
             #form navigation
             self.__nav_client_delete()
         else:
             self.ui.client_list_delete_enter_id.setText("Enter ID")
             self.ui.client_list_delete_enter_id.setFocus()
-            self.ui.client_list_delete_enter_id.selectAll()              
-
+            self.ui.client_list_delete_enter_id.selectAll()        
+            
     def __nav_login(self):
 
         #iniialize form
@@ -374,24 +377,36 @@ class MainApplication(QtWidgets.QMainWindow):
         self.__obj_inputvalidation = InputValidation(self.__id)
         self.__check_digit = self.__obj_inputvalidation.check_has_digits()
 
+        #get length of dataframe
+        self.__df_length = len(self.__df)
+
         if self.__check_digit == "True":
 
-            #iniialize form
-            self.ui.stackedWidget.setCurrentWidget(self.ui.client_edit_profile)
+            #check input is within length of rows and drop if true
+            if int(self.__id) <= int(self.__df_length):
 
-            #get client list for table widget
-            self.__widget_name = "client_edit_profile_list"
-            self.__get_type = "one" #all or one client(s)
-            self.__get_client_list(self.__widget_name, self.__get_type, self.__id)
+                #iniialize form
+                self.ui.stackedWidget.setCurrentWidget(self.ui.client_edit_profile)
 
-            #set text
-            self.ui.client_edit_profile_first_name.setText(self.__first_name)
-            self.ui.client_edit_profile_last_name.setText(self.__last_name)
+                #get client list for table widget
+                self.__widget_name = "client_edit_profile_list"
+                self.__get_type = "one" #all or one client(s)
+                self.__get_client_list(self.__widget_name, self.__get_type, self.__id)
 
-            if self.__selected_service == "Brokerage":
-                self.ui.client_edit_profile_cmb_service.setCurrentIndex(0)
-            elif self.__selected_service == "Retirement":
-                self.ui.client_edit_profile_cmb_service.setCurrentIndex(1)
+                #set text
+                self.ui.client_edit_profile_first_name.setText(self.__first_name)
+                self.ui.client_edit_profile_last_name.setText(self.__last_name)
+
+                if self.__selected_service == "Brokerage":
+                    self.ui.client_edit_profile_cmb_service.setCurrentIndex(0)
+                elif self.__selected_service == "Retirement":
+                    self.ui.client_edit_profile_cmb_service.setCurrentIndex(1)
+
+            else:
+                self.ui.client_list_edit_enter_id.setText("Enter ID")
+                self.ui.client_list_edit_enter_id.selectAll()
+                self.ui.client_list_edit_enter_id.setFocus()
+
 
         else:
             self.ui.client_list_edit_enter_id.setText("Enter ID")
@@ -418,7 +433,7 @@ class MainApplication(QtWidgets.QMainWindow):
         self.ui.client_list_delete_enter_id.setFocus()
         self.ui.client_list_delete_enter_id.selectAll()
 
-     #get client list for table widget
+        #get client list for table widget
         self.__widget_name = "client_list_delete_list"
         self.__get_type = "all" #all or one client(s)
         self.__get_client_list(self.__widget_name, self.__get_type, self.__id)
