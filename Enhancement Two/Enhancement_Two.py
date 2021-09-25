@@ -230,9 +230,8 @@ class MainApplication(QtWidgets.QMainWindow):
         self.__last_name = self.ui.client_edit_profile_last_name.text()
         self.__selected_service = self.ui.client_edit_profile_cmb_service.currentText()
 
-
-        #WEBSTER
-        self__df_update_index = self.__df.index[self.__df['ID'] == self.__id].tolist()
+        #get index of item
+        self__df_update_index = self.__df[self.__df['ID'] == self.__id].index.item()
 
         #get row to append
         self.__df_append_row = self__df_update_index
@@ -249,15 +248,8 @@ class MainApplication(QtWidgets.QMainWindow):
             ]            
 
         #check input is within length of rows and drop if true
-        #if self.__df_append_row <= int(self.__df_length):            
-        
-        self.__df.loc[self__df_update_index] = self.__update_client_data
-
-
-
-
-
-
+        if self.__df_append_row <= int(self.__df_length):
+            self.__df.loc[self__df_update_index] = self.__update_client_data
 
         #form navigation
         self.__nav_client_edit_profile() 
