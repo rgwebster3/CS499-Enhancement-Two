@@ -2,15 +2,10 @@
 #******************************************************************
 # Author: Robert Webster
 # Program: Client Management App
-# Date: 09/01/2021
+# Date: 09/24/2021
 # 
 # Comments: 
 #
-# https://www.w3schools.com/python/python_classes.asp
-# https://betterprogramming.pub/advanced-python-9-best-practices-to-apply-when-you-define-classes-871a27af658b
-# https://www.youtube.com/watch?v=RSl87lqOXDE
-#
-# https://www.kite.com/python/answers/how-to-append-a-list-as-a-row-to-a-pandas-dataframe-in-python
 #
 #******************************************************************
 
@@ -20,11 +15,6 @@ import string
 import sqlite3
 import pyodbc
 import pandas as pd
-import database_create_sqlite3 as db_create_sqlite3
-
-#choose database connection method
-#import database_etl_sqlserver as db_conn
-import database_etl_sqlite3 as db_conn
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QAbstractTableModel, Qt
@@ -69,6 +59,7 @@ class MainApplication(QtWidgets.QMainWindow):
            ['5', 'Carol', 'Spears', 'Retirement'] 
            ]
 
+        #create pandas dataframe
         self.__df = pd.DataFrame(self.__client_list, columns = ['ID', 'First Name', 'Last Name', 'Service'] )
 
         #initialize form
@@ -533,15 +524,6 @@ class InputValidation(object):
 def main():
 
     if __name__ == "__main__":
-
-        #create new database if does not exists
-        database_path = os.environ['TEMP'] + '\cma.db'
-        database_exists = os.path.exists(database_path)
-
-        if database_exists == False:
-
-            obj_db = db_create_sqlite3.CreateDB()
-            obj_db.create_table_data()
 
         #start application
         app = QtWidgets.QApplication([])

@@ -22,8 +22,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="application_windows.py" />
-    <Compile Include="database_create_sqlite3.py" />
-    <Compile Include="database_etl_sqlite3.py" />
     <Compile Include="Enhancement_Two.py" />
     <Compile Include="Examples\example_create_db.py" />
     <Compile Include="Examples\example_inherited_class_method.py" />
