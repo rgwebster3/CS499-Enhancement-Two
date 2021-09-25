@@ -32,10 +32,6 @@ class MainApplication(QtWidgets.QMainWindow):
         #initialize variables
         self.__username = ""
         self.__key = "123"
-        self.__rec_id = ""
-        self.__first_name = ""
-        self.__last_name = ""
-        self.__selected_service = ""
 
         #set design attributes
         self.style = "::section {""background-color: #E0E0E0; }" #set bg color of table header
